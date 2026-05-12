@@ -1,0 +1,96 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: api-gateway
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration
+
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                secured: false
+
+        - id: rdv-service-public
+          uri: lb://rdv-service
+          predicates:
+            - Path=/api/rdv
+            - Method=POST
+          filters:
+            - name: JwtAuthFilter
+              args:
+                secured: false
+
+        - id: rdv-service-admin
+          uri: lb://rdv-service
+          predicates:
+            - Path=/api/rdv/admin/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                secured: true
+
+        - id: suivi-service
+          uri: lb://suivi-service
+          predicates:
+            - Path=/api/suivi/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                secured: true
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                secured: true
+
+jwt:
+  secret: dGhpc2lzYXZlcnlsb25nc2VjcmV0a2V5Zm9ydGhlb3J0aG9waG9uaXN0ZXByb2plY3QyMDI2
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway
+
+logging:
+  level:
+    com.orthophoniste.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
