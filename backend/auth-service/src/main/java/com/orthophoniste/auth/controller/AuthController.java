@@ -1,6 +1,7 @@
 package com.orthophoniste.auth.controller;
 
 import com.orthophoniste.auth.dto.*;
+import com.orthophoniste.auth.model.Role;
 import com.orthophoniste.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,16 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
-
+    @PostMapping("/register-patient")
+    public ResponseEntity<AuthResponse> registerPatient(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+    @PostMapping("/register-admin")
+    public ResponseEntity<AuthResponse> registerAdmin(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.registerWithRole(request, Role.ROLE_ADMIN));
+    }
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request) {

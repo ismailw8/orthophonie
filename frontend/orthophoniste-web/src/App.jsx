@@ -6,7 +6,7 @@ import RendezVous from './pages/RendezVous';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-
+import Statistics from './pages/Statistics';
 function App() {
     return (
         <AuthProvider>
@@ -28,6 +28,14 @@ function App() {
                         element={
                             <ProtectedRoute requiredRole="ROLE_ADMIN">
                                 <AdminDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/stats"
+                        element={
+                            <ProtectedRoute requiredRole="ROLE_ADMIN">
+                                <Statistics />
                             </ProtectedRoute>
                         }
                     />

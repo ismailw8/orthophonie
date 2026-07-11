@@ -42,6 +42,26 @@ public class AuthService {
         userRepository.save(user);
         return buildAuthResponse(user);
     }
+    public AuthResponse registerWithRole(RegisterRequest request, Role role) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
+
+        var user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
+                .role(role)
+                .enabled(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        userRepository.save(user);
+        return buildAuthResponse(user);
+    }
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(

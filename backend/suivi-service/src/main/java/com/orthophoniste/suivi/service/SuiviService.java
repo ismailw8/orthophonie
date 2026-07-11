@@ -23,9 +23,22 @@ public class SuiviService {
     // ── PATIENT (lecture seule) ──────────────────────────────
 
     public DashboardResponse getDashboard(String email) {
-        var bilan = bilanRepository.findByPatientEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Aucun bilan trouvé pour : " + email));
+
+        var bilanOpt = bilanRepository.findByPatientEmail(email);
+
+        // Pas encore de bilan → dashboard vide
+        if (bilanOpt.isEmpty()) {
+            return DashboardResponse.builder()
+                    .seancesEffectuees(0)
+                    .seancesPrevues(0)
+                    .progressionGlobale(0)
+                    .bilan(null)
+                    .prochainesSeances(List.of())
+                    .seancesPassees(List.of())
+                    .build();
+        }
+
+        var bilan = bilanOpt.get();
 
         var toutes = seanceRepository
                 .findByPatientEmailOrderByDateSeanceAsc(email);

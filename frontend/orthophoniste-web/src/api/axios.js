@@ -1,25 +1,39 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: '',  // ← vide, le proxy Vite gère la redirection
+    baseURL: '',
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Intercepteur request — ajoute le token JWT automatiquement
+// Routes publiques — pas de token
+const PUBLIC_ROUTES = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/refresh',
+];
+
+// Intercepteur request
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        const isPublic = PUBLIC_ROUTES.some(route =>
+            config.url?.includes(route)
+        );
+
+        if (!isPublic) {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
         }
+
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Intercepteur response — gère l'expiration du token
+// Intercepteur response
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
