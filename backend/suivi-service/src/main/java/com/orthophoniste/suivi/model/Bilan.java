@@ -18,7 +18,7 @@ public class Bilan {
     @Id
     private String id;
 
-    @Indexed
+    @Indexed(unique = true)
     private String patientId;
 
     private String patientEmail;

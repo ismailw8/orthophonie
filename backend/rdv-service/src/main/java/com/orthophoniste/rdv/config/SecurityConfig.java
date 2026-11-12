@@ -1,40 +1,30 @@
 package com.orthophoniste.rdv.config;
 
-import com.orthophoniste.rdv.security.JwtAuthFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import java.util.*;
 
-@Configuration
-@EnableWebSecurity
-@EnableMethodSecurity
-@RequiredArgsConstructor
+@Configuration @EnableMethodSecurity
 public class SecurityConfig {
-
-    private final JwtAuthFilter jwtAuthFilter;
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(s -> s
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // public : prise de RDV sans authentification
-                        .requestMatchers("POST", "/api/rdv").permitAll()
-                        // admin : gestion des RDV
-                        .requestMatchers("/api/rdv/admin/**")
-                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
+    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable()).sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.requestMatchers("/error", "/actuator/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/rdv").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/rdv/creneaux-occupes", "/api/rdv/indisponibilites").permitAll()
+                .requestMatchers("/api/rdv/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/rdv/patient/**").hasRole("USER").anyRequest().authenticated())
+            .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter())));
         return http.build();
+    }
+    @Bean JwtAuthenticationConverter converter() {
+        JwtAuthenticationConverter c = new JwtAuthenticationConverter(); c.setPrincipalClaimName("email");
+        c.setJwtGrantedAuthoritiesConverter(jwt -> { Map<String,Object> a=jwt.getClaim("realm_access"); if(a==null)return List.of(); Collection<String> r=(Collection<String>)a.getOrDefault("roles",List.of()); return r.stream().<org.springframework.security.core.GrantedAuthority>map(SimpleGrantedAuthority::new).toList(); }); return c;
     }
 }

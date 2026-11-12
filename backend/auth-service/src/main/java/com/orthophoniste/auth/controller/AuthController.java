@@ -6,46 +6,14 @@ import com.orthophoniste.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
-@RestController
-@RequestMapping("/api/auth")
-@RequiredArgsConstructor
+@RestController @RequestMapping("/api/auth") @RequiredArgsConstructor
 public class AuthController {
-
-    private final AuthService authService;
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
-    }
-    @PostMapping("/register-patient")
-    public ResponseEntity<AuthResponse> registerPatient(
-            @Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
-    }
-    @PostMapping("/register-admin")
-    public ResponseEntity<AuthResponse> registerAdmin(
-            @Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.registerWithRole(request, Role.ROLE_ADMIN));
-    }
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(
-            @RequestHeader("Refresh-Token") String token) {
-        return ResponseEntity.ok(authService.refresh(token));
-    }
-
-    @GetMapping("/validate")
-    public ResponseEntity<String> validate(
-            @RequestHeader("Authorization") String authHeader) {
-        return ResponseEntity.ok("Token valide");
-    }
+ private final AuthService authService;
+ @PostMapping("/register-patient") public PatientResponse registerPatient(@Valid @RequestBody RegisterRequest r){return authService.register(r);}
+ @PostMapping("/register-admin") public PatientResponse registerAdmin(@Valid @RequestBody RegisterRequest r){return authService.registerWithRole(r, Role.ROLE_ADMIN);}
+ @GetMapping("/admin/patients") public List<PatientResponse> patients(){return authService.listPatients();}
+ @PutMapping("/admin/patients/{id}/reset-password") public ResponseEntity<Void> reset(@PathVariable String id,@Valid @RequestBody ResetPatientPasswordRequest r){authService.resetPatientPassword(id,r.getTemporaryPassword());return ResponseEntity.noContent().build();}
 }

@@ -1,0 +1,94 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.0
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: http://localhost:8180
+      KC_HTTP_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/orthophoniste-realm.json:ro
+      - keycloak-data:/opt/keycloak/data
+    ports: ["8180:8080"]
+    networks: [internal]
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes: [mongo-data:/data/db]
+    networks: [internal]
+  discovery-service:
+    build: { context: ., dockerfile: backend/Dockerfile, args: { SERVICE: discovery-service } }
+    networks: [internal]
+  api-gateway:
+    build: { context: ., dockerfile: backend/Dockerfile, args: { SERVICE: api-gateway } }
+    depends_on: [discovery-service, keycloak]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/orthophoniste
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/orthophoniste/protocol/openid-connect/certs
+      EUREKA_URL: http://discovery-service:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
+      ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-http://localhost:8080}
+    networks: [internal]
+  auth-service:
+    build: { context: ., dockerfile: backend/Dockerfile, args: { SERVICE: auth-service } }
+    depends_on: [mongodb, discovery-service, keycloak]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/orthophoniste
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/orthophoniste/protocol/openid-connect/certs
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:-local-admin-client-secret}
+      MONGO_URI: mongodb://mongodb:27017/auth_db
+      EUREKA_URL: http://discovery-service:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: auth-service
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+    networks: [internal]
+  rdv-service:
+    build: { context: ., dockerfile: backend/Dockerfile, args: { SERVICE: rdv-service } }
+    depends_on: [mongodb, discovery-service, keycloak]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/orthophoniste
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/orthophoniste/protocol/openid-connect/certs
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_SERVICE_CLIENT_SECRET: ${KEYCLOAK_SERVICE_CLIENT_SECRET:-local-service-client-secret}
+      MONGO_URI: mongodb://mongodb:27017/rdv_db
+      EUREKA_URL: http://discovery-service:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: rdv-service
+      SUIVI_SERVICE_URL: http://suivi-service:8083
+    networks: [internal]
+  suivi-service:
+    build: { context: ., dockerfile: backend/Dockerfile, args: { SERVICE: suivi-service } }
+    depends_on: [mongodb, discovery-service, keycloak]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/orthophoniste
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/orthophoniste/protocol/openid-connect/certs
+      MONGO_URI: mongodb://mongodb:27017/suivi_db
+      EUREKA_URL: http://discovery-service:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: suivi-service
+    networks: [internal]
+  notification-service:
+    build: { context: ., dockerfile: backend/Dockerfile, args: { SERVICE: notification-service } }
+    depends_on: [discovery-service, keycloak]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/orthophoniste
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/orthophoniste/protocol/openid-connect/certs
+      EUREKA_URL: http://discovery-service:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: notification-service
+      TWILIO_ENABLED: ${TWILIO_ENABLED:-false}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER:-}
+    networks: [internal]
+  frontend:
+    build: frontend/orthophoniste-web
+    depends_on: [api-gateway]
+    ports: ["8080:80"]
+    networks: [internal]
+networks: { internal: {} }
+volumes: { mongo-data: {}, keycloak-data: {} }

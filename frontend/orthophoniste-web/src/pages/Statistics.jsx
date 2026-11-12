@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+    BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend,
     ResponsiveContainer, AreaChart, Area
 } from 'recharts';
@@ -13,13 +13,6 @@ const MOIS = [
     'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
     'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'
 ];
-
-const COLORS = {
-    confirme:  '#0EA5E9',
-    attente:   '#F59E0B',
-    annule:    '#EF4444',
-    termine:   '#10B981',
-};
 
 const PIE_COLORS = ['#0EA5E9', '#F59E0B', '#EF4444', '#10B981'];
 

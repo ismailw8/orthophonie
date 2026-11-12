@@ -1,0 +1,7 @@
+* text=auto
+
+# Shell scripts must work on Linux, including in GitHub Actions and Docker.
+mvnw text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf

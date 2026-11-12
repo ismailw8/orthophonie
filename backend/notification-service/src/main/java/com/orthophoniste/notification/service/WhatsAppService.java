@@ -21,6 +21,9 @@ public class WhatsAppService {
 
     public NotificationResponse sendWhatsApp(String phone, String messageBody) {
         try {
+            if (!twilioConfig.isEnabled()) {
+                throw new IllegalStateException("Envoi desactive : TWILIO_ENABLED=false");
+            }
             // Twilio WhatsApp nécessite le préfixe "whatsapp:"
             String destination = phone.startsWith("whatsapp:")
                     ? phone

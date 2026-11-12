@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -78,13 +79,16 @@ public class SuiviService {
                         .createdAt(LocalDateTime.now())
                         .build());
 
-        bilan.setPatientEmail(request.getPatientEmail());
-        bilan.setPatientNom(request.getPatientNom());
-        bilan.setSeancesEffectuees(request.getSeancesEffectuees());
-        bilan.setSeancesPrevues(request.getSeancesPrevues());
+        bilan.setPatientEmail(request.getPatientEmail().trim().toLowerCase());
+        bilan.setPatientNom(request.getPatientNom().trim());
+        // Counts come from persisted sessions, including when saving the bilan.
+        bilan.setSeancesEffectuees(Math.toIntExact(
+                seanceRepository.countByPatientIdAndEffectuee(request.getPatientId(), true)));
+        bilan.setSeancesPrevues(Math.toIntExact(
+                seanceRepository.countByPatientId(request.getPatientId())));
         bilan.setProgressionGlobale(request.getProgressionGlobale());
-        bilan.setAxes(request.getAxes());
-        bilan.setRemarques(request.getRemarques());
+        bilan.setAxes(request.getAxes() == null ? List.of() : request.getAxes());
+        bilan.setRemarques(request.getRemarques() == null ? "" : request.getRemarques().trim());
         bilan.setUpdatedAt(LocalDateTime.now());
 
         bilanRepository.save(bilan);
@@ -93,6 +97,10 @@ public class SuiviService {
     }
 
     public SeanceResponse ajouterSeance(SeanceRequest request) {
+        if (seanceRepository.findAll().stream().anyMatch(seance -> !seance.isEffectuee()
+                && request.getDateSeance().equals(seance.getDateSeance()))) {
+            throw new IllegalArgumentException("Ce créneau est déjà occupé par une séance");
+        }
         var seance = Seance.builder()
                 .patientId(request.getPatientId())
                 .patientEmail(request.getPatientEmail())
@@ -105,6 +113,7 @@ public class SuiviService {
                 .build();
 
         seanceRepository.save(seance);
+        synchroniserCompteurs(request.getPatientId());
         log.info("Séance ajoutée : {} pour {}", request.getTitre(), request.getPatientEmail());
         return toSeanceResponse(seance);
     }
@@ -117,7 +126,13 @@ public class SuiviService {
         seance.setEffectuee(true);
         seance.setUpdatedAt(LocalDateTime.now());
         seanceRepository.save(seance);
+        synchroniserCompteurs(seance.getPatientId());
         return toSeanceResponse(seance);
+    }
+
+    public List<SeanceResponse> listerSeances() {
+        return seanceRepository.findAllByOrderByDateSeanceAsc()
+                .stream().map(this::toSeanceResponse).toList();
     }
 
     public List<SeanceResponse> listerSeancesPatient(String patientId) {
@@ -127,10 +142,28 @@ public class SuiviService {
     }
 
     public void supprimerSeance(String seanceId) {
-        if (!seanceRepository.existsById(seanceId)) {
-            throw new IllegalArgumentException("Séance introuvable : " + seanceId);
-        }
+        var seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new IllegalArgumentException("Séance introuvable : " + seanceId));
         seanceRepository.deleteById(seanceId);
+        synchroniserCompteurs(seance.getPatientId());
+    }
+
+    public List<String> listerCreneauxOccupes(LocalDate date) {
+        return seanceRepository.findAll().stream()
+                .filter(seance -> !seance.isEffectuee() && seance.getDateSeance() != null
+                        && seance.getDateSeance().toLocalDate().equals(date))
+                .map(seance -> seance.getDateSeance().toLocalTime().toString())
+                .distinct().sorted().toList();
+    }
+
+    private void synchroniserCompteurs(String patientId) {
+        bilanRepository.findByPatientId(patientId).ifPresent(bilan -> {
+            bilan.setSeancesPrevues(Math.toIntExact(seanceRepository.countByPatientId(patientId)));
+            bilan.setSeancesEffectuees(Math.toIntExact(
+                    seanceRepository.countByPatientIdAndEffectuee(patientId, true)));
+            bilan.setUpdatedAt(LocalDateTime.now());
+            bilanRepository.save(bilan);
+        });
     }
 
     // ── MAPPERS ──────────────────────────────────────────────

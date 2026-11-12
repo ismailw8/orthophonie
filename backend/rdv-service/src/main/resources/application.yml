@@ -4,24 +4,39 @@ server:
 spring:
   application:
     name: rdv-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/orthophoniste}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/orthophoniste/protocol/openid-connect/certs}
   data:
     mongodb:
       uri: ${MONGO_URI:mongodb://localhost:27017/rdv_db}
       database: rdv_db
+      auto-index-creation: true
 
-jwt:
-  secret: dGhpc2lzYXZlcnlsb25nc2VjcmV0a2V5Zm9ydGhlb3J0aG9waG9uaXN0ZXByb2plY3QyMDI2
 
-feign:
-  circuitbreaker:
-    enabled: true
+
+cabinet:
+  hours:
+    open: ${CABINET_OPEN_TIME:09:00}
+    close: ${CABINET_CLOSE_TIME:17:00}
+  slot-minutes: ${CABINET_SLOT_MINUTES:15}
+  max-booking-days: ${CABINET_MAX_BOOKING_DAYS:180}
+
+clients:
+  suivi:
+    url: ${SUIVI_SERVICE_URL:http://localhost:8083}
+
 
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
   instance:
-    prefer-ip-address: true
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    prefer-ip-address: false
 
 management:
   endpoints:
@@ -31,5 +46,11 @@ management:
 
 logging:
   level:
-    com.orthophoniste.rdv: DEBUG
+    com.orthophoniste.rdv: ${APP_LOG_LEVEL:INFO}
     org.springframework.security: INFO
+
+keycloak:
+  server-url: ${KEYCLOAK_INTERNAL_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:orthophoniste}
+  service-client-id: ${KEYCLOAK_SERVICE_CLIENT_ID:rdv-service}
+  service-client-secret: ${KEYCLOAK_SERVICE_CLIENT_SECRET:local-service-client-secret}

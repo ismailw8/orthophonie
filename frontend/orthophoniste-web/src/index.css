@@ -1,9 +1,62 @@
 @import "tailwindcss";
 
+:root {
+    color: #0f172a;
+    background: #f8fafc;
+    font-synthesis: none;
+    --brand: #075985;
+    --brand-dark: #0c4a6e;
+    --surface: #ffffff;
+    --canvas: #f8fafc;
+    --border: #e2e8f0;
+}
+
 * {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-sizing: border-box;
 }
 
 html {
     scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+    margin: 0;
+    background: var(--canvas);
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+}
+
+button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+    outline: 3px solid #bae6fd;
+    outline-offset: 2px;
+}
+
+/* Normalise les anciens écrans métier dans le nouveau système visuel. */
+.admin-shell [class*="bg-gradient"] {
+    background-image: none !important;
+    background-color: var(--brand) !important;
+}
+
+.admin-shell [class*="rounded-3xl"] {
+    border-radius: 1rem !important;
+}
+
+.admin-shell [class*="shadow-2xl"],
+.admin-shell [class*="shadow-xl"] {
+    box-shadow: 0 12px 28px rgb(15 23 42 / 0.12) !important;
+}
+
+.admin-shell [class*="border-sky-100"] {
+    border-color: var(--border) !important;
 }

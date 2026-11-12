@@ -20,6 +20,8 @@ public class User {
     @Indexed(unique = true)
     private String email;
 
+    private String keycloakId;
+
     private String password;
     private String firstName;
     private String lastName;
@@ -27,6 +29,8 @@ public class User {
 
     private Role role;
     private boolean enabled;
+    private int refreshTokenVersion;
+    private boolean mustChangePassword;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

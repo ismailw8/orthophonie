@@ -6,9 +6,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-            </div>
+            <main className="grid min-h-screen place-items-center bg-slate-50 px-5">
+                <div className="text-center" role="status">
+                    <div className="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-sky-800" />
+                    <p className="mt-4 text-sm font-medium text-slate-600">Ouverture de votre espace…</p>
+                </div>
+            </main>
         );
     }
 
@@ -23,7 +26,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
         ) {
             return children;
         }
-        return <Navigate to="/" replace />;
+        return <Navigate to="/espace" replace />;
     }
 
     return children;

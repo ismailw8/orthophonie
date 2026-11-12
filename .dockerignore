@@ -1,0 +1,15 @@
+.git
+.idea
+.idea_backup
+**/target
+**/node_modules
+**/dist
+out
+*.zip
+*.log
+.env
+
+.tools
+.runtime
+releases
+frontend/.idea

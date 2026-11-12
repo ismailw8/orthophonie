@@ -1,0 +1,139 @@
+.booking-page {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    background-color: var(--canvas, #f8fafc);
+}
+
+/* Only the decorative photo is transparent; controls keep their full contrast. */
+.booking-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url('/images/orthophonie-affiches.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    opacity: .18;
+}
+
+.booking-steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .5rem;
+    margin-bottom: 1.75rem;
+}
+
+.booking-steps::before,
+.booking-steps::after {
+    content: '';
+    position: absolute;
+    top: 1.2rem;
+    left: calc(100% / 6);
+    right: calc(100% / 6);
+    height: 3px;
+    pointer-events: none;
+    background: #cbd5e1;
+}
+
+.booking-steps::after {
+    background: var(--brand, #075985);
+    transform: scaleX(var(--booking-progress, 0));
+    transform-origin: left;
+}
+
+.booking-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .65rem;
+    text-align: center;
+    font-size: .875rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.booking-step-number {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.booking-step[data-state='current'],
+.booking-step[data-state='complete'] {
+    color: var(--brand, #075985);
+}
+
+.booking-step[data-state='current'] .booking-step-number {
+    border-color: var(--brand, #075985);
+    background: var(--brand, #075985);
+    color: #fff;
+    box-shadow: 0 0 0 4px #e0f2fe;
+}
+
+.booking-step[data-state='complete'] .booking-step-number {
+    border-color: var(--brand, #075985);
+    background: #f0f9ff;
+}
+
+.booking-time-slot[aria-pressed='true'] {
+    box-shadow: 0 0 0 3px #e0f2fe;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .booking-step-content {
+        animation: booking-step-enter 280ms ease-out both;
+    }
+
+    .booking-steps::after {
+        transition: transform 320ms ease-out;
+    }
+
+    .booking-step-number {
+        transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+    }
+
+    .booking-page main button {
+        transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .booking-page main button:enabled:active {
+        transform: scale(.98);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+    .booking-page main button:enabled:hover {
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes booking-step-enter {
+    from { opacity: .5; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .booking-step-content,
+    .booking-steps::after,
+    .booking-step-number,
+    .booking-page main button {
+        animation: none;
+        transition: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .booking-page::before {
+        background-position: 54% center;
+        opacity: .14;
+    }
+}

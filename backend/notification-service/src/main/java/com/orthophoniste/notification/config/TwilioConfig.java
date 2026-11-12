@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 public class TwilioConfig {
 
+    @Value("${twilio.enabled:false}")
+    private boolean enabled;
+
     @Value("${twilio.account-sid}")
     private String accountSid;
 
@@ -24,6 +27,11 @@ public class TwilioConfig {
 
     @PostConstruct
     public void initTwilio() {
-        Twilio.init(accountSid, authToken);
+        if (enabled) {
+            if (accountSid.isBlank() || authToken.isBlank() || phoneNumber.isBlank() || whatsappNumber.isBlank()) {
+                throw new IllegalStateException("Configurer Twilio ou definir TWILIO_ENABLED=false");
+            }
+            Twilio.init(accountSid, authToken);
+        }
     }
 }

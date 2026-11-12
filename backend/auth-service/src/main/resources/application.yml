@@ -3,28 +3,43 @@ server:
   error:
     include-message: always
     include-binding-errors: always
-    include-stacktrace: always
-    include-exception: true
+    include-stacktrace: never
+    include-exception: false
 
 spring:
   application:
     name: auth-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/orthophoniste}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/orthophoniste/protocol/openid-connect/certs}
   data:
     mongodb:
       uri: ${MONGO_URI:mongodb://localhost:27017/auth_db}
       database: auth_db
 
-jwt:
-  secret: dGhpc2lzYXZlcnlsb25nc2VjcmV0a2V5Zm9ydGhlb3J0aG9waG9uaXN0ZXByb2plY3QyMDI2
-  expiration: 86400000
-  refresh-expiration: 604800000
+keycloak:
+  server-url: ${KEYCLOAK_INTERNAL_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:orthophoniste}
+  admin-client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:orthophoniste-admin}
+  admin-client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:local-admin-client-secret}
+
+bootstrap:
+  super-admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    first-name: ${BOOTSTRAP_ADMIN_FIRST_NAME:Super}
+    last-name: ${BOOTSTRAP_ADMIN_LAST_NAME:Admin}
 
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
   instance:
-    prefer-ip-address: true
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    prefer-ip-address: false
 
 management:
   endpoints:
@@ -34,8 +49,5 @@ management:
 
 logging:
   level:
-    com.orthophoniste.auth: DEBUG
-    org.springframework.security: TRACE
-    org.springframework.security.web: TRACE
-    org.springframework.security.web.FilterChainProxy: TRACE
-    org.springframework.security.web.access: TRACE
+    com.orthophoniste.auth: ${APP_LOG_LEVEL:INFO}
+    org.springframework.security: INFO

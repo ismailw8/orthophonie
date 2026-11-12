@@ -1,0 +1,16 @@
+eureka:
+  client:
+    enabled: false
+spring:
+  cloud:
+    discovery:
+      enabled: false
+  data:
+    mongodb:
+      auto-index-creation: false
+management:
+  health:
+    mongo:
+      enabled: false
+twilio:
+  enabled: false

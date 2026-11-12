@@ -2,6 +2,7 @@ package com.orthophoniste.suivi.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ public class SeanceRequest {
     private String patientId;
 
     @NotBlank(message = "Email patient requis")
+    @Email(message = "Email patient invalide")
     private String patientEmail;
 
     @NotBlank(message = "Titre requis")

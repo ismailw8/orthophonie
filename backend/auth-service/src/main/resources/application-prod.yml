@@ -1,0 +1,23 @@
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+auth:
+  cookie:
+    secure: true
+    same-site: Strict
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    root: INFO
+    com.orthophoniste.auth: INFO
+    org.springframework.security: WARN

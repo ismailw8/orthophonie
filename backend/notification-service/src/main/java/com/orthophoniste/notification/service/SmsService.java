@@ -21,6 +21,9 @@ public class SmsService {
 
     public NotificationResponse sendSms(String phone, String messageBody) {
         try {
+            if (!twilioConfig.isEnabled()) {
+                throw new IllegalStateException("Envoi desactive : TWILIO_ENABLED=false");
+            }
             Message message = Message.creator(
                     new PhoneNumber(phone),
                     new PhoneNumber(twilioConfig.getPhoneNumber()),

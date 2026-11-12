@@ -1,0 +1,21 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: ${ALLOWED_ORIGINS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    root: INFO
+    com.orthophoniste.gateway: INFO
+    org.springframework.cloud.gateway: WARN

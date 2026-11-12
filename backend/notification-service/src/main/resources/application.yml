@@ -4,22 +4,28 @@ server:
 spring:
   application:
     name: notification-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/orthophoniste}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/orthophoniste/protocol/openid-connect/certs}
 
 twilio:
-  account-sid: ${TWILIO_ACCOUNT_SID:ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
-  auth-token: ${TWILIO_AUTH_TOKEN:your_auth_token}
-  phone-number: ${TWILIO_PHONE_NUMBER:+1234567890}
-  whatsapp-number: ${TWILIO_WHATSAPP_NUMBER:whatsapp:+14155238886}
+  enabled: ${TWILIO_ENABLED:false}
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:}
+  whatsapp-number: ${TWILIO_WHATSAPP_NUMBER:}
 
-jwt:
-  secret: dGhpc2lzYXZlcnlsb25nc2VjcmV0a2V5Zm9ydGhlb3J0aG9waG9uaXN0ZXByb2plY3QyMDI2
 
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
   instance:
-    prefer-ip-address: true
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    prefer-ip-address: false
 
 management:
   endpoints:
@@ -29,5 +35,5 @@ management:
 
 logging:
   level:
-    com.orthophoniste.notification: DEBUG
+    com.orthophoniste.notification: ${APP_LOG_LEVEL:INFO}
     com.twilio: WARN
